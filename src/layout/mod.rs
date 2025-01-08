@@ -3745,6 +3745,77 @@ impl<W: LayoutElement> Layout<W> {
         monitor.move_workspace_up();
     }
 
+    pub fn move_workspace_to_idx(&mut self, output: Output, old_idx: usize, new_idx: usize) {
+        let Some(monitor) = self.monitor_for_output_mut(&output) else {
+            return;
+        };
+        monitor.move_workspace_to_idx(old_idx, new_idx);
+    }
+
+    pub fn move_workspace_to_output_by_id(
+        &mut self,
+        old_idx: usize,
+        old_output: &Output,
+        new_output: &Output,
+    ) {
+        let MonitorSet::Normal {
+            monitors,
+            active_monitor_idx,
+            ..
+        } = &mut self.monitor_set
+        else {
+            return;
+        };
+
+        let current_idx = monitors
+            .iter()
+            .position(|mon| &mon.output == old_output)
+            .unwrap();
+        let current = &mut monitors[current_idx];
+
+        if old_idx > current.workspaces.len() - 1 {
+            return;
+        }
+
+        if old_idx == current.workspaces.len() - 1 {
+            // Insert a new empty workspace.
+            current.add_workspace_bottom();
+        }
+        if current.options.empty_workspace_above_first && old_idx == 0 {
+            current.add_workspace_top();
+        }
+
+        let mut ws = current.workspaces.remove(old_idx);
+        current.active_workspace_idx = old_idx.saturating_sub(1);
+        current.workspace_switch = None;
+        current.clean_up_workspaces();
+
+        ws.set_output(Some(new_output.clone()));
+        ws.original_output = OutputId::new(new_output);
+
+        let target_idx = monitors
+            .iter()
+            .position(|mon| &mon.output == new_output)
+            .unwrap();
+        let target = &mut monitors[target_idx];
+
+        target.previous_workspace_id = Some(target.workspaces[target.active_workspace_idx].id());
+
+        if target.options.empty_workspace_above_first && target.workspaces.len() == 1 {
+            // Insert a new empty workspace on top to prepare for insertion of new workspce.
+            target.add_workspace_top();
+        }
+        // Insert the workspace after the currently active one. Unless the currently active one is
+        // the last empty workspace, then insert before.
+        let target_ws_idx = min(target.active_workspace_idx + 1, target.workspaces.len() - 1);
+        target.workspaces.insert(target_ws_idx, ws);
+        target.active_workspace_idx = target_ws_idx;
+        target.workspace_switch = None;
+        target.clean_up_workspaces();
+
+        *active_monitor_idx = target_idx;
+    }
+
     pub fn start_open_animation_for_window(&mut self, window: &W::Id) {
         if let Some(InteractiveMoveState::Moving(move_)) = &self.interactive_move {
             if move_.tile.window().id() == window {

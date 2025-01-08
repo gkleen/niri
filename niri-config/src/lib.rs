@@ -1261,6 +1261,16 @@ pub enum Action {
     MoveColumnToWorkspace(#[knuffel(argument)] WorkspaceReference),
     MoveWorkspaceDown,
     MoveWorkspaceUp,
+    #[knuffel(skip)]
+    MoveWorkspaceToIndex {
+        new_idx: usize,
+        reference: WorkspaceReference,
+    },
+    #[knuffel(skip)]
+    MoveWorkspaceToMonitor {
+        output_name: String,
+        reference: WorkspaceReference,
+    },
     FocusMonitorLeft,
     FocusMonitorRight,
     FocusMonitorDown,
@@ -1477,6 +1487,18 @@ impl From<niri_ipc::Action> for Action {
             niri_ipc::Action::MoveWorkspaceToMonitorUp {} => Self::MoveWorkspaceToMonitorUp,
             niri_ipc::Action::MoveWorkspaceToMonitorPrevious {} => {
                 Self::MoveWorkspaceToMonitorPrevious
+            }
+            niri_ipc::Action::MoveWorkspaceToIndex { index, reference } => {
+                Self::MoveWorkspaceToIndex {
+                    new_idx: index,
+                    reference: WorkspaceReference::from(reference),
+                }
+            }
+            niri_ipc::Action::MoveWorkspaceToMonitor { output, reference } => {
+                Self::MoveWorkspaceToMonitor {
+                    output_name: output,
+                    reference: WorkspaceReference::from(reference),
+                }
             }
             niri_ipc::Action::MoveWorkspaceToMonitorNext {} => Self::MoveWorkspaceToMonitorNext,
             niri_ipc::Action::ToggleDebugTint {} => Self::ToggleDebugTint,
