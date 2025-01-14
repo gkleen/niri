@@ -519,6 +519,24 @@ pub enum Action {
     MoveWorkspaceToMonitorPrevious {},
     /// Move the focused workspace to the next monitor.
     MoveWorkspaceToMonitorNext {},
+    /// Move the specified workspace to the specified index on the same monitor.
+    MoveWorkspaceToIndex {
+        /// New index for the workspace.
+        #[cfg_attr(feature = "clap", arg(long))]
+        index: usize,
+        /// The workspace to move.
+        #[cfg_attr(feature = "clap", arg())]
+        reference: WorkspaceReferenceArg,
+    },
+    /// Move specified workspace to specified monitor.
+    MoveWorkspaceToMonitor {
+        /// The output to move the workspace to.
+        #[cfg_attr(feature = "clap", arg(long))]
+        output: String,
+        /// The workspace to move.
+        #[cfg_attr(feature = "clap", arg())]
+        reference: WorkspaceReferenceArg,
+    },
     /// Toggle a debug tint on windows.
     ToggleDebugTint {},
     /// Toggle visualization of render element opaque regions.

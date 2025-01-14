@@ -1139,6 +1139,37 @@ impl State {
             Action::UnsetWorkSpaceNameByRef(reference) => {
                 self.niri.layout.unset_workspace_name(Some(reference));
             }
+            Action::MoveWorkspaceToIndex {
+                new_idx: index,
+                reference,
+            } => {
+                if let Some((Some(output), old_idx)) =
+                    self.niri.find_output_and_workspace_index(reference)
+                {
+                    self.niri
+                        .layout
+                        .move_workspace_to_idx(output, old_idx, index);
+                }
+            }
+            Action::MoveWorkspaceToMonitor {
+                output_name,
+                reference,
+            } => {
+                if let Some((Some(output), old_idx)) =
+                    self.niri.find_output_and_workspace_index(reference)
+                {
+                    if let Some(new_output) = self.niri.output_by_name_match(&output_name).cloned()
+                    {
+                        if new_output != output {
+                            self.niri.layout.move_workspace_to_output_by_id(
+                                old_idx,
+                                &output,
+                                &new_output,
+                            );
+                        }
+                    }
+                }
+            }
             Action::ConsumeWindowIntoColumn => {
                 self.niri.layout.consume_into_column();
                 // This does not cause immediate focus or window size change, so warping mouse to
