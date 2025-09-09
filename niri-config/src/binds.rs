@@ -110,6 +110,10 @@ pub enum Action {
     DebugToggleDamage,
     Spawn(#[knuffel(arguments)] Vec<String>),
     SpawnSh(#[knuffel(argument)] String),
+    SendUnix(
+        #[knuffel(property(name = "path"))] String,
+        #[knuffel(argument, bytes)] Vec<u8>,
+    ),
     DoScreenTransition(#[knuffel(property(name = "delay-ms"))] Option<u16>),
     #[knuffel(skip)]
     ConfirmScreenshot {
@@ -911,7 +915,7 @@ where
             }
             match Action::decode_node(child, ctx) {
                 Ok(action) => {
-                    if !matches!(action, Action::Spawn(_) | Action::SpawnSh(_)) {
+                    if !matches!(action, Action::Spawn(_) | Action::SpawnSh(_) | Action::SendUnix(_, _)) {
                         if let Some(node) = allow_when_locked_node {
                             ctx.emit_error(DecodeError::unexpected(
                                 node,

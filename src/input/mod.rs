@@ -52,6 +52,7 @@ use crate::protocols::virtual_keyboard::VirtualKeyboard;
 use crate::ui::mru::{WindowMru, WindowMruUi};
 use crate::ui::screenshot_ui::ScreenshotUi;
 use crate::utils::spawning::{spawn, spawn_sh};
+use crate::utils::send_unix::send_unix;
 use crate::utils::{center, get_monotonic_time, CastSessionId, ResizeEdge};
 
 pub mod backend_ext;
@@ -725,6 +726,11 @@ impl State {
             Action::SpawnSh(command) => {
                 let (token, _) = self.niri.activation_state.create_external_token(None);
                 spawn_sh(command, Some(token.clone()));
+            }
+            Action::SendUnix(path, message) => {
+                if let Err(err) = send_unix(&path, message) {
+                    warn!("error sending message via unix socket: {err:?}");
+                }
             }
             Action::DoScreenTransition(delay_ms) => {
                 self.backend.with_primary_renderer(|renderer| {
