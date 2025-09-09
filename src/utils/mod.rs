@@ -36,6 +36,7 @@ pub mod id;
 pub mod scale;
 pub mod signals;
 pub mod spawning;
+pub mod send_unix;
 pub mod transaction;
 pub mod watcher;
 pub mod xwayland;

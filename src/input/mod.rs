@@ -45,6 +45,7 @@ use crate::layout::{ActivateWindow, LayoutElement as _};
 use crate::niri::{CastTarget, PointerVisibility, State};
 use crate::ui::screenshot_ui::ScreenshotUi;
 use crate::utils::spawning::{spawn, spawn_sh};
+use crate::utils::send_unix::send_unix;
 use crate::utils::{center, get_monotonic_time, ResizeEdge};
 
 pub mod backend_ext;
@@ -599,6 +600,11 @@ impl State {
             Action::SpawnSh(command) => {
                 let (token, _) = self.niri.activation_state.create_external_token(None);
                 spawn_sh(command, Some(token.clone()));
+            }
+            Action::SendUnix(path, message) => {
+                if let Err(err) = send_unix(&path, message) {
+                    warn!("error sending message via unix socket: {err:?}");
+                }
             }
             Action::DoScreenTransition(delay_ms) => {
                 self.backend.with_primary_renderer(|renderer| {
