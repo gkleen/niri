@@ -915,7 +915,7 @@ where
             }
             match Action::decode_node(child, ctx) {
                 Ok(action) => {
-                    if !matches!(action, Action::Spawn(_) | Action::SpawnSh(_) | Action::SendUnix(_, _)) {
+                    if !matches!(action, Action::Spawn(_) | Action::SpawnSh(_) | Action::SendUnix(_, _) | Action::PowerOffMonitors | Action::PowerOnMonitors) {
                         if let Some(node) = allow_when_locked_node {
                             ctx.emit_error(DecodeError::unexpected(
                                 node,
